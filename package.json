@@ -1,0 +1,47 @@
+{
+  "name": "wrpc",
+  "version": "0.1.0",
+  "description": "Cross worker rpc client and server",
+  "keywords": [
+    "rpc",
+    "worker",
+    "web-worker"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/broadsw0rd/wrpc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/broadsw0rd/wrpc"
+  },
+  "bugs": {
+    "url": "https://github.com/broadsw0rd/wrpc/issues",
+    "email": "broadsw.rd@yandex.ru"
+  },
+  "author": {
+    "name": "Vladimir Bykov",
+    "email": "broadsw.rd@yandex.ru",
+    "url": "https://github.com/broadsw0rd"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/wrpc.umd.js",
+  "module": "dist/wrpc.js",
+  "devDependencies": {
+    "rollup": "0.49.2",
+    "rollup-plugin-buble": "0.15.0",
+    "snazzy": "7.0.0",
+    "standard": "^10.0.3",
+    "uglify-js": "3.0.28"
+  },
+  "scripts": {
+    "check": "standard src/*.js | snazzy",
+    "build": "rollup -c",
+    "min": "uglifyjs dist/wrpc.umd.js -c -m > dist/wrpc.min.js"
+  },
+  "babel": {
+    "presets": [
+      "es2015-loose-rollup"
+    ]
+  }
+}
