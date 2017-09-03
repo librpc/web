@@ -18,7 +18,7 @@
 
 - Simple - [138 LOC](https://github.com/broadsw0rd/wrpc/blob/master/dist/wrpc.js#L138)
 - Lightweight - [2 KB](https://github.com/broadsw0rd/wrpc/blob/master/dist/wrpc.min.js)
-- Simple as possible
+- Easiest API as possible
 - Promise based
 - Designed with performance in mind
 
