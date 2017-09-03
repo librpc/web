@@ -27,7 +27,7 @@
 
 ```js
 // server.js
-import { RpcServer } from 'wrpc'
+import { Server as RpcServer } from 'wrpc'
 
 self.rpcServer = new RpcServer({
   fib (n) {
@@ -51,7 +51,7 @@ self.rpcServer = new RpcServer({
 
 ```js
 // client.js
-import { RpcClient } from 'wrpc'
+import { Client as RpcClient } from 'wrpc'
 
 var worker = new window.Worker('server.js')
 
@@ -73,25 +73,51 @@ rpcClient.call('fac', n)
 #### `#constructor(methods)`
 
 ```js
-var serve = new RpcServer({
-  add ({ x, y }) {},
-  sub ({ x, y }) {},
-  mul ({ x, y }) {},
-  div ({ x, y }) {}
+var server = new RpcServer({
+  add ({ x, y }) { return x + y },
+  sub ({ x, y }) { return x - y },
+  mul ({ x, y }) { return x * y },
+  div ({ x, y }) { return x / y },
+  pow ({ x, y }) { return x ** y }
 })
 ```
 
 #### `#emit(eventName, data)`
 
+```js
+setInterval(() => {
+  server.emit('update', Date.now())
+}, 50)
+```
+
 ### RpcClient
 
 #### `#constructor({ worker })`
 
+```js
+var worker = new window.Worker('server.js')
+var client = new RpcClient({ worker })
+```
+
 #### `#call(method, data, { timeout = 2000 })`
+
+```js
+client.call('add', { x: 100, y: 100 })
+  .then(result => console.log(result))
+```
 
 #### `#on(eventName, handler)`
 
+```js
+function handler (data) { console.log(data) }
+client.on('update', handler)
+```
+
 #### `#off(eventName, handler)`
+
+```js
+client.off('update', handler)
+```
 
 ## Development
 
