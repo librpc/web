@@ -68,6 +68,31 @@ rpcClient.call('fac', n)
 
 ## API
 
+### RpcServer
+
+#### `#constructor(methods)`
+
+```js
+var serve = new RpcServer({
+  add ({ x, y }) {},
+  sub ({ x, y }) {},
+  mul ({ x, y }) {},
+  div ({ x, y }) {}
+})
+```
+
+#### `#emit(eventName, data)`
+
+### RpcClient
+
+#### `#constructor({ worker })`
+
+#### `#call(method, data, { timeout = 2000 })`
+
+#### `#on(eventName, handler)`
+
+#### `#off(eventName, handler)`
+
 ## Development
 
 Command | Description
