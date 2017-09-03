@@ -1,11 +1,13 @@
 {
   "name": "wrpc",
   "version": "0.1.0",
-  "description": "Cross worker rpc client and server",
+  "description": "Promise based cross worker rpc client and server",
   "keywords": [
     "rpc",
     "worker",
-    "web-worker"
+    "web-worker",
+    "threads",
+    "concurrency"
   ],
   "license": "MIT",
   "homepage": "https://github.com/broadsw0rd/wrpc",
