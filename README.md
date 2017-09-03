@@ -19,7 +19,7 @@
 - Simple - [138 LOC](https://github.com/broadsw0rd/wrpc/blob/master/dist/wrpc.js#L138)
 - Lightweight - [2 KB](https://github.com/broadsw0rd/wrpc/blob/master/dist/wrpc.min.js)
 - Promise based
-- Designed with performance in mind and tested with [IRHydra](http://mrale.ph/irhydra/2/)
+- Designed with performance in mind
 
 ## Install
 
