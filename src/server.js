@@ -2,8 +2,8 @@
 import { peekTransferables } from './utils.js'
 
 class RpcServer {
-  constructor (handlers) {
-    this.handlers = handlers
+  constructor (methods) {
+    this.methods = methods
     this.listen()
   }
 
@@ -13,8 +13,8 @@ class RpcServer {
 
   handler (e) {
     var { method, uid, data } = e.data
-    if (this.handlers[method]) {
-      Promise.all([method, uid, this.handlers[method](data)]).then(this.reply)
+    if (this.methods[method]) {
+      Promise.all([method, uid, this.methods[method](data)]).then(this.reply)
     }
   }
 

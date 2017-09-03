@@ -19,3 +19,7 @@ export function peekTransferables (data) {
   }
   return result
 }
+
+export function guid () {
+  return Math.floor((1 + Math.random()) * 1e6).toString(16)
+}
