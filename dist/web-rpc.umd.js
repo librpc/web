@@ -68,12 +68,14 @@ function guid () {
 
 var RpcClient = (function (EventEmitter$$1) {
   function RpcClient (ref) {
-    var worker = ref.worker;
+    var workers = ref.workers;
 
     EventEmitter$$1.call(this);
-    this.worker = worker;
+    this.workers = workers;
+    this.idx = 0;
     this.calls = {};
     this.timeouts = {};
+    this.handler = this.handler.bind(this);
     this.listen();
   }
 
@@ -82,7 +84,9 @@ var RpcClient = (function (EventEmitter$$1) {
   RpcClient.prototype.constructor = RpcClient;
 
   RpcClient.prototype.listen = function listen () {
-    this.worker.addEventListener('message', this.handler.bind(this));
+    var this$1 = this;
+
+    this.workers.forEach(function (worker) { return worker.addEventListener('message', this$1.handler); });
   };
 
   RpcClient.prototype.handler = function handler (e) {
@@ -115,7 +119,8 @@ var RpcClient = (function (EventEmitter$$1) {
 
     var uid = guid();
     var transferables = peekTransferables(data);
-    this.worker.postMessage({ method: method, uid: uid, data: data }, transferables);
+    this.idx = ++this.idx % this.workers.length; // round robin
+    this.workers[this.idx].postMessage({ method: method, uid: uid, data: data }, transferables);
     return new Promise(function (resolve, reject) {
       this$1.timeouts[uid] = setTimeout(function () { return reject(new Error(("RPC timeout exceeded for '" + method + "' call"))); }, timeout);
       this$1.calls[uid] = resolve;

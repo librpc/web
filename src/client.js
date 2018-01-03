@@ -2,16 +2,18 @@ import EventEmitter from '@librpc/ee'
 import { peekTransferables, guid } from './utils.js'
 
 class RpcClient extends EventEmitter {
-  constructor ({ worker }) {
+  constructor ({ workers }) {
     super()
-    this.worker = worker
+    this.workers = workers
+    this.idx = 0
     this.calls = {}
     this.timeouts = {}
+    this.handler = this.handler.bind(this)
     this.listen()
   }
 
   listen () {
-    this.worker.addEventListener('message', this.handler.bind(this))
+    this.workers.forEach(worker => worker.addEventListener('message', this.handler))
   }
 
   handler (e) {
@@ -36,7 +38,8 @@ class RpcClient extends EventEmitter {
   call (method, data, { timeout = 2000 } = {}) {
     var uid = guid()
     var transferables = peekTransferables(data)
-    this.worker.postMessage({ method, uid, data }, transferables)
+    this.idx = ++this.idx % this.workers.length // round robin
+    this.workers[this.idx].postMessage({ method, uid, data }, transferables)
     return new Promise((resolve, reject) => {
       this.timeouts[uid] = setTimeout(() => reject(new Error(`RPC timeout exceeded for '${method}' call`)), timeout)
       this.calls[uid] = resolve
