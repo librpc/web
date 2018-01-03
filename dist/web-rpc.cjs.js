@@ -1,8 +1,4 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.WRPC = factory());
-}(this, (function () { 'use strict';
+'use strict';
 
 function isObject (object) {
   return Object(object) === object
@@ -141,6 +137,4 @@ var index = {
   Server: RpcServer
 };
 
-return index;
-
-})));
+module.exports = index;

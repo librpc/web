@@ -1,6 +1,6 @@
 {
-  "name": "wrpc",
-  "version": "0.1.0",
+  "name": "@librpc/web",
+  "version": "0.0.1",
   "description": "Promise based cross worker rpc client and server",
   "keywords": [
     "rpc",
@@ -10,13 +10,13 @@
     "concurrency"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/broadsw0rd/wrpc",
+  "homepage": "https://github.com/librpc/web",
   "repository": {
     "type": "git",
-    "url": "https://github.com/broadsw0rd/wrpc"
+    "url": "https://github.com/librpc/web"
   },
   "bugs": {
-    "url": "https://github.com/broadsw0rd/wrpc/issues",
+    "url": "https://github.com/librpc/web/issues",
     "email": "broadsw.rd@yandex.ru"
   },
   "author": {
@@ -27,8 +27,9 @@
   "files": [
     "dist"
   ],
-  "main": "dist/wrpc.umd.js",
-  "module": "dist/wrpc.js",
+  "umd": "dist/web-rpc.umd.js",
+  "main": "dist/web-rpc.cjs.js",
+  "module": "dist/web-rpc.js",
   "devDependencies": {
     "rollup": "0.49.2",
     "rollup-plugin-buble": "0.15.0",
@@ -39,11 +40,6 @@
   "scripts": {
     "check": "standard src/*.js | snazzy",
     "build": "rollup -c",
-    "min": "uglifyjs dist/wrpc.umd.js -c -m > dist/wrpc.min.js"
-  },
-  "babel": {
-    "presets": [
-      "es2015-loose-rollup"
-    ]
+    "min": "uglifyjs dist/web-rpc.umd.js -c -m > dist/web-rpc.min.js"
   }
 }

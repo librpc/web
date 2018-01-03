@@ -15,8 +15,8 @@
 
 ## Features
 
-- Simple - [138 LOC](https://github.com/broadsw0rd/wrpc/blob/master/dist/wrpc.js#L138)
-- Lightweight - [2 KB](https://github.com/broadsw0rd/wrpc/blob/master/dist/wrpc.min.js)
+- Simple - [138 LOC](https://github.com/librpc/web/blob/master/dist/web.js#L138)
+- Lightweight - [2 KB](https://github.com/librpc/web/blob/master/dist/web.min.js)
 - Easiest API as possible
 - Promise based
 - Designed with performance in mind
@@ -27,7 +27,7 @@
 
 ```js
 // server.js
-import { Server as RpcServer } from 'wrpc'
+import { Server as RpcServer } from '@librpc/web'
 
 self.rpcServer = new RpcServer({
   fib (n) {
@@ -51,7 +51,7 @@ self.rpcServer = new RpcServer({
 
 ```js
 // client.js
-import { Client as RpcClient } from 'wrpc'
+import { Client as RpcClient } from '@librpc/web'
 
 var worker = new window.Worker('server.js')
 
@@ -68,7 +68,7 @@ rpcClient.call('fac', n)
 
 ## API
 
-### RpcServer
+### WebRPC.Server
 
 #### `#constructor(methods)`
 
@@ -90,7 +90,7 @@ setInterval(() => {
 }, 50)
 ```
 
-### RpcClient
+### WebRPC.Client
 
 #### `#constructor({ worker })`
 
