@@ -15,10 +15,9 @@
 
 ## Features
 
-- Simple - [138 LOC](https://github.com/librpc/web/blob/master/dist/web.js#L138)
+- Simple - [163 LOC](https://github.com/librpc/web/blob/master/dist/web.js#L163)
 - Lightweight - [2 KB](https://github.com/librpc/web/blob/master/dist/web.min.js)
-- Easiest API as possible
-- Promise based
+- Promise based easiest API as possible
 - Designed with performance in mind
 
 ## Install
@@ -106,17 +105,17 @@ client.call('add', { x: 100, y: 100 })
   .then(result => console.log(result))
 ```
 
-#### `#on(eventName, handler)`
+#### `#on(eventName, listener)`
 
 ```js
-function handler (data) { console.log(data) }
-client.on('update', handler)
+function listener (data) { console.log(data) }
+client.on('update', listener)
 ```
 
-#### `#off(eventName, handler)`
+#### `#off(eventName, listener)`
 
 ```js
-client.off('update', handler)
+client.off('update', listener)
 ```
 
 ## Development

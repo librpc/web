@@ -4,6 +4,42 @@
 	(global.WebRPC = factory());
 }(this, (function () { 'use strict';
 
+var Emitter = function Emitter () {
+  this.events = Object.create(null);
+};
+
+Emitter.prototype.on = function on (event, listener) {
+  var listeners = this.events[event];
+
+  if (!listeners) {
+    listeners = [];
+    this.events[event] = listeners;
+  }
+
+  listeners.push(listener);
+};
+
+Emitter.prototype.off = function off (event, listener) {
+  var listeners = this.events[event];
+
+  if (listeners) {
+    var idx = listeners.indexOf(listener);
+    if (idx !== -1) {
+      listeners.splice(idx, 1);
+    }
+  }
+};
+
+Emitter.prototype.emit = function emit (event, data) {
+  var listeners = this.events[event];
+
+  if (listeners) {
+    for (var i = 0; i < listeners.length; i++) {
+      listeners[i](data);
+    }
+  }
+};
+
 function isObject (object) {
   return Object(object) === object
 }
@@ -30,75 +66,64 @@ function guid () {
   return Math.floor((1 + Math.random()) * 1e6).toString(16)
 }
 
-var RpcClient = function RpcClient (ref) {
-  var worker = ref.worker;
+var RpcClient = (function (EventEmitter$$1) {
+  function RpcClient (ref) {
+    var worker = ref.worker;
 
-  this.worker = worker;
-  this.events = {};
-  this.calls = {};
-  this.timeouts = {};
-  this.listen();
-};
+    EventEmitter$$1.call(this);
+    this.worker = worker;
+    this.calls = {};
+    this.timeouts = {};
+    this.listen();
+  }
 
-RpcClient.prototype.listen = function listen () {
-  this.worker.addEventListener('message', this.handler.bind(this));
-};
+  if ( EventEmitter$$1 ) RpcClient.__proto__ = EventEmitter$$1;
+  RpcClient.prototype = Object.create( EventEmitter$$1 && EventEmitter$$1.prototype );
+  RpcClient.prototype.constructor = RpcClient;
 
-RpcClient.prototype.handler = function handler (e) {
-  var ref = e.data;
+  RpcClient.prototype.listen = function listen () {
+    this.worker.addEventListener('message', this.handler.bind(this));
+  };
+
+  RpcClient.prototype.handler = function handler (e) {
+    var ref = e.data;
     var method = ref.method;
     var eventName = ref.eventName;
     var data = ref.data;
     var uid = ref.uid;
-  if (method) {
-    this.resolve(uid, data);
-  }
-  if (eventName) {
-    this.trigger(eventName, data);
-  }
-};
+    if (method) {
+      this.resolve(uid, data);
+    }
+    if (eventName) {
+      this.emit(eventName, data);
+    }
+  };
 
-RpcClient.prototype.resolve = function resolve (uid, data) {
-  if (this.calls[uid]) {
-    clearTimeout(this.timeouts[uid]);
-    this.calls[uid](data);
-    delete this.timeouts[uid];
-    delete this.calls[uid];
-  }
-};
+  RpcClient.prototype.resolve = function resolve (uid, data) {
+    if (this.calls[uid]) {
+      clearTimeout(this.timeouts[uid]);
+      this.calls[uid](data);
+      delete this.timeouts[uid];
+      delete this.calls[uid];
+    }
+  };
 
-RpcClient.prototype.trigger = function trigger (eventName, data) {
-  var handlers = this.events[eventName] || [];
-  for (var i = 0; i < handlers.length; i++) {
-    handlers[i](data);
-  }
-};
-
-RpcClient.prototype.call = function call (method, data, ref) {
+  RpcClient.prototype.call = function call (method, data, ref) {
     var this$1 = this;
     if ( ref === void 0 ) ref = {};
     var timeout = ref.timeout; if ( timeout === void 0 ) timeout = 2000;
 
-  var uid = guid();
-  var transferables = peekTransferables(data);
-  this.worker.postMessage({ method: method, uid: uid, data: data }, transferables);
-  return new Promise(function (resolve, reject) {
-    this$1.timeouts[uid] = setTimeout(function () { return reject(new Error(("RPC timeout exceeded for '" + method + "' call"))); }, timeout);
-    this$1.calls[uid] = resolve;
-  })
-};
+    var uid = guid();
+    var transferables = peekTransferables(data);
+    this.worker.postMessage({ method: method, uid: uid, data: data }, transferables);
+    return new Promise(function (resolve, reject) {
+      this$1.timeouts[uid] = setTimeout(function () { return reject(new Error(("RPC timeout exceeded for '" + method + "' call"))); }, timeout);
+      this$1.calls[uid] = resolve;
+    })
+  };
 
-RpcClient.prototype.on = function on (eventName, handler) {
-  var handlers = this.events[eventName] || [];(this.events[eventName] = handlers).push(handler);
-};
-
-RpcClient.prototype.off = function off (eventName, handler) {
-  var handlers = this.events[eventName] || [];
-  var idx = handlers.indexOf(handler);
-  if (idx !== -1) {
-    this.events[eventName].splice(idx, 1);
-  }
-};
+  return RpcClient;
+}(Emitter));
 
 /* eslint-env serviceworker */
 var RpcServer = function RpcServer (methods) {
