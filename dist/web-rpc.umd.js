@@ -40,6 +40,9 @@ Emitter.prototype.emit = function emit (event, data) {
   }
 };
 
+var crypto = window.crypto || window.msCrypto;
+var arr = new Uint8Array(1);
+
 function isObject (object) {
   return Object(object) === object
 }
@@ -62,8 +65,10 @@ function peekTransferables (data) {
   return result
 }
 
-function guid () {
-  return Math.floor((1 + Math.random()) * 1e6).toString(16)
+// https://github.com/Chalarangelo/30-seconds-of-code#uuidgeneratorbrowser
+function uuid () {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) { return (c ^ (crypto.getRandomValues(arr)[0] & (15 >> (c / 4)))).toString(16); }
+  )
 }
 
 var RpcClient = (function (EventEmitter$$1) {
@@ -117,10 +122,10 @@ var RpcClient = (function (EventEmitter$$1) {
     if ( ref === void 0 ) ref = {};
     var timeout = ref.timeout; if ( timeout === void 0 ) timeout = 2000;
 
-    var uid = guid();
+    var uid = uuid();
     var transferables = peekTransferables(data);
-    this.idx = ++this.idx % this.workers.length; // round robin
     this.workers[this.idx].postMessage({ method: method, uid: uid, data: data }, transferables);
+    this.idx = ++this.idx % this.workers.length; // round robin
     return new Promise(function (resolve, reject) {
       this$1.timeouts[uid] = setTimeout(function () { return reject(new Error(("RPC timeout exceeded for '" + method + "' call"))); }, timeout);
       this$1.calls[uid] = resolve;
