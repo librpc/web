@@ -72,10 +72,11 @@ var RpcClient = (function (EventEmitter$$1) {
     var workers = ref.workers;
 
     EventEmitter$$1.call(this);
-    this.workers = workers;
+    this.workers = [].concat( workers );
     this.idx = 0;
     this.calls = {};
     this.timeouts = {};
+    this.errors = {};
     this.handler = this.handler.bind(this);
     this.listen();
   }
@@ -92,10 +93,14 @@ var RpcClient = (function (EventEmitter$$1) {
 
   RpcClient.prototype.handler = function handler (e) {
     var ref = e.data;
+    var error = ref.error;
     var method = ref.method;
     var eventName = ref.eventName;
     var data = ref.data;
     var uid = ref.uid;
+    if (error) {
+      this.reject(uid, error);
+    }
     if (method) {
       this.resolve(uid, data);
     }
@@ -104,13 +109,25 @@ var RpcClient = (function (EventEmitter$$1) {
     }
   };
 
+  RpcClient.prototype.reject = function reject (uid, error) {
+    if (this.errors[uid]) {
+      this.errors[uid](new Error(error));
+      this.clear(uid);
+    }
+  };
+
   RpcClient.prototype.resolve = function resolve (uid, data) {
     if (this.calls[uid]) {
-      clearTimeout(this.timeouts[uid]);
       this.calls[uid](data);
-      delete this.timeouts[uid];
-      delete this.calls[uid];
+      this.clear(uid);
     }
+  };
+
+  RpcClient.prototype.clear = function clear (uid) {
+    clearTimeout(this.timeouts[uid]);
+    delete this.timeouts[uid];
+    delete this.calls[uid];
+    delete this.errors[uid];
   };
 
   RpcClient.prototype.call = function call (method, data, ref) {
@@ -123,7 +140,7 @@ var RpcClient = (function (EventEmitter$$1) {
     this.workers[this.idx].postMessage({ method: method, uid: uid, data: data }, transferables);
     this.idx = ++this.idx % this.workers.length; // round robin
     return new Promise(function (resolve, reject) {
-      this$1.timeouts[uid] = setTimeout(function () { return reject(new Error(("RPC timeout exceeded for '" + method + "' call"))); }, timeout);
+      this$1.timeouts[uid] = setTimeout(function () { return this$1.reject(("RPC timeout exceeded for '" + method + "' call")); }, timeout);
       this$1.calls[uid] = resolve;
     })
   };
@@ -142,22 +159,29 @@ RpcServer.prototype.listen = function listen () {
 };
 
 RpcServer.prototype.handler = function handler (e) {
+    var this$1 = this;
+
   var ref = e.data;
     var method = ref.method;
     var uid = ref.uid;
     var data = ref.data;
   if (this.methods[method]) {
-    Promise.all([method, uid, this.methods[method](data)]).then(this.reply);
+    Promise.all([this.methods[method](data)]).then(
+      function (data) { return this$1.reply(uid, method, data); },
+      function (error) { return this$1.throw(uid, error); }
+    );
+  } else {
+    this.throw(uid, ("Unknown RPC method: " + method));
   }
 };
 
-RpcServer.prototype.reply = function reply (ref) {
-    var method = ref[0];
-    var uid = ref[1];
-    var data = ref[2];
-
+RpcServer.prototype.reply = function reply (uid, method, data) {
   var transferables = peekTransferables(data);
-  self.postMessage({ method: method, uid: uid, data: data }, transferables);
+  self.postMessage({ uid: uid, method: method, data: data }, transferables);
+};
+
+RpcServer.prototype.throw = function throw$1 (uid, error) {
+  self.postMessage({ uid: uid, error: error });
 };
 
 RpcServer.prototype.emit = function emit (eventName, data) {

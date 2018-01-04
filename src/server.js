@@ -14,13 +14,22 @@ class RpcServer {
   handler (e) {
     var { method, uid, data } = e.data
     if (this.methods[method]) {
-      Promise.all([method, uid, this.methods[method](data)]).then(this.reply)
+      Promise.all([this.methods[method](data)]).then(
+        data => this.reply(uid, method, data),
+        error => this.throw(uid, error)
+      )
+    } else {
+      this.throw(uid, `Unknown RPC method: ${method}`)
     }
   }
 
-  reply ([method, uid, data]) {
+  reply (uid, method, data) {
     var transferables = peekTransferables(data)
-    self.postMessage({ method, uid, data }, transferables)
+    self.postMessage({ uid, method, data }, transferables)
+  }
+
+  throw (uid, error) {
+    self.postMessage({ uid, error })
   }
 
   emit (eventName, data) {
