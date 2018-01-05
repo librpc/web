@@ -24,12 +24,11 @@
 
 ## Features
 
-- Simple - [197 LOC](https://github.com/librpc/web/blob/master/dist/web-rpc.js#L197)
-- Lightweight - [2.7 KB](https://github.com/librpc/web/blob/master/dist/web-rpc.min.js)
 - Promise based easiest API as possible
 - Load balancing with round robin strategy
 - Error handling
 - Transferables support
+- Server Events
 - High performance
 
 ## Install
