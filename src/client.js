@@ -52,12 +52,12 @@ class RpcClient extends EventEmitter {
   call (method, data, { timeout = 2000 } = {}) {
     var uid = uuid()
     var transferables = peekTransferables(data)
-    this.workers[this.idx].postMessage({ method, uid, data }, transferables)
-    this.idx = ++this.idx % this.workers.length // round robin
     return new Promise((resolve, reject) => {
       this.timeouts[uid] = setTimeout(() => this.reject(`RPC timeout exceeded for '${method}' call`), timeout)
       this.calls[uid] = resolve
       this.errors[uid] = reject
+      this.workers[this.idx].postMessage({ method, uid, data }, transferables)
+      this.idx = ++this.idx % this.workers.length // round robin
     })
   }
 }

@@ -14,7 +14,7 @@ class RpcServer {
   handler (e) {
     var { method, uid, data } = e.data
     if (this.methods[method]) {
-      Promise.all([this.methods[method](data)]).then(
+      Promise.resolve(data).then(this.methods[method]).then(
         data => this.reply(uid, method, data),
         error => this.throw(uid, error)
       )
