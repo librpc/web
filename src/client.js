@@ -21,11 +21,9 @@ class RpcClient extends EventEmitter {
     var { error, method, eventName, data, uid } = e.data
     if (error) {
       this.reject(uid, error)
-    }
-    if (method) {
+    } else if (method) {
       this.resolve(uid, data)
-    }
-    if (eventName) {
+    } else if (eventName) {
       this.emit(eventName, data)
     }
   }
@@ -59,6 +57,7 @@ class RpcClient extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.timeouts[uid] = setTimeout(() => this.reject(`RPC timeout exceeded for '${method}' call`), timeout)
       this.calls[uid] = resolve
+      this.errors[uid] = reject
     })
   }
 }

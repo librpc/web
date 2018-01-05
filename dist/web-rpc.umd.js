@@ -104,11 +104,9 @@ var RpcClient = (function (EventEmitter$$1) {
     var uid = ref.uid;
     if (error) {
       this.reject(uid, error);
-    }
-    if (method) {
+    } else if (method) {
       this.resolve(uid, data);
-    }
-    if (eventName) {
+    } else if (eventName) {
       this.emit(eventName, data);
     }
   };
@@ -146,6 +144,7 @@ var RpcClient = (function (EventEmitter$$1) {
     return new Promise(function (resolve, reject) {
       this$1.timeouts[uid] = setTimeout(function () { return this$1.reject(("RPC timeout exceeded for '" + method + "' call")); }, timeout);
       this$1.calls[uid] = resolve;
+      this$1.errors[uid] = reject;
     })
   };
 
