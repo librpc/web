@@ -1,5 +1,11 @@
 <h1 align="center">Promise based cross worker rpc client and server</h1>
 <p align="center">
+  <a href="https://travis-ci.org/librpc/web" target="_blank">
+    <img src="https://travis-ci.org/librpc/web.svg?branch=master" alt="Build Status" target="_blank"></img>
+  </a>
+  <a href='https://coveralls.io/github/librpc/web?branch=master'>
+    <img src='https://coveralls.io/repos/github/librpc/web/badge.svg?branch=master' alt='Coverage Status' />
+  </a>
   <a href="https://www.bithound.io/github/librpc/web">
     <img src="https://www.bithound.io/github/librpc/web/badges/score.svg" alt="bitHound Overall Score">
   </a>
