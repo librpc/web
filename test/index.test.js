@@ -35,7 +35,7 @@ var server = new WebRPC.Server({
 })
 
 var client = new WebRPC.Client({
-  workers: [worker, worker]
+  workers: [worker]
 })
 
 test('RpcServer.constructor()', t => {
@@ -54,12 +54,12 @@ test('RpcServer.emit()', t => {
   client.on('event', listener)
   server.emit('event', { foo: 'bar' })
   client.off('event', listener)
-  server.emit('event', { foo: 'bar' })  
+  server.emit('event', { foo: 'bar' })
 })
 
 test('RpcClient.constructor() should create new RPC client', t => {
   t.ok(client instanceof WebRPC.Client, 'should create new RPC client')
-  t.equal(client.workers.length, 2, 'should have passed workers')
+  t.equal(client.workers.length, 1, 'should have passed workers')
   t.deepEqual(worker.eventNames(), ['message'], 'should listen "message" event')
   t.end()
 })
@@ -68,7 +68,7 @@ test('RpcClient.call()', t => {
   t.plan(4)
   var result = client.call('add', { x: 1, y: 1})
   t.ok(result.then, 'should return Promise')
-  t.equal(client.idx, 1, 'should round robbin')
+  t.equal(client.idx, 0, 'should round robbin')
   result.then(res => t.equal(res, 2, 'should call RPC server method'))
   client.call('length').catch(err => {
     t.ok(err instanceof Error, 'should throw error for unknown methods')

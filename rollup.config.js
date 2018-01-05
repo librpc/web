@@ -13,6 +13,6 @@ export default {
   plugins: [
     buble(),
     nodeResolve(),
-    commonjs(),
+    commonjs()
   ]
 }
