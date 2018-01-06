@@ -39,23 +39,14 @@
 // server.js
 import { Server as RpcServer } from '@librpc/web'
 
-self.rpcServer = new RpcServer({
-  fib (n) {
-    var a = 1
-    var b = 0
-    for (var i = n; i--;) {
-      b = [a, a += b][0]
-    }
-    return b
-  },
+function wait (time) {
+  return new Promise(resolve => setTimeout(resolve, time))
+}
 
-  fac (n) {
-    var f = 1
-    for (var i = 2; i <= n; i++) {
-      f *= i
-    }
-    return f
-  }
+self.rpcServer = new RpcServer({
+  add ({ x, y }) { return x + y },
+  task () { return wait(1000) },
+  error () { return err }
 })
 ```
 
@@ -67,13 +58,17 @@ var worker = new window.Worker('server.js')
 
 var rpcClient = new RpcClient({ workers: [worker] })
 
-var n = 100
+rpcClient.call('add', { x: 1, y: 1})
+  .then(res => console.log(res)) // 2
 
-rpcClient.call('fib', n)
-  .then((result) => console.log(`Response fib(${n}) = ${result}`))
-  
-rpcClient.call('fac', n)
-  .then((result) => console.log(`Response fac(${n}) = ${result}`))
+rpcClient.call('length')
+  .catch(err => console.log(err)) // Unknown RPC method "length"
+
+rpcClient.call('task', null, { timeout: 100 })
+  .catch(err => console.log(err)) // Timeout exceeded for RPC method "task"
+
+rpcClient.call('error')
+  .catch(err => console.log(err)) // ReferenceError: err is not defined
 ```
 
 ## API
@@ -112,7 +107,7 @@ var client = new RpcClient({ worker })
 #### `#call(method, data, { timeout = 2000 })`
 
 ```js
-client.call('add', { x: 100, y: 100 })
+client.call('pow', { x: 2, y: 10 })
   .then(result => console.log(result))
 ```
 
