@@ -19,7 +19,7 @@ class RpcServer {
         error => this.throw(uid, error)
       )
     } else {
-      this.throw(uid, `Unknown RPC method: ${method}`)
+      this.throw(uid, `Unknown RPC method "${method}"`)
     }
   }
 

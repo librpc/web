@@ -30,8 +30,8 @@ function wait (time) {
 
 var server = new WebRPC.Server({
   add ({ x, y }) { return x + y },
-  pow ({ x, y }) { return x ** y },
-  task () { return wait(1000) }
+  task () { return wait(1000).then(() => 'done') },
+  error () { return err }
 })
 
 var client = new WebRPC.Client({
@@ -40,7 +40,7 @@ var client = new WebRPC.Client({
 
 test('RpcServer.constructor()', t => {
   t.ok(server instanceof WebRPC.Server, 'should create new RPC server')
-  t.deepEqual(Object.keys(server.methods), ['add', 'pow', 'task'], 'should have passed methods')
+  t.deepEqual(Object.keys(server.methods), ['add', 'task', 'error'], 'should have passed methods')
   t.deepEqual(self.eventNames(), ['message'], 'should listen "message" event')
   t.end()
 })
@@ -65,12 +65,18 @@ test('RpcClient.constructor() should create new RPC client', t => {
 })
 
 test('RpcClient.call()', t => {
-  t.plan(4)
+  t.plan(6)
   var result = client.call('add', { x: 1, y: 1})
   t.ok(result.then, 'should return Promise')
   t.equal(client.idx, 0, 'should round robbin')
   result.then(res => t.equal(res, 2, 'should call RPC server method'))
   client.call('length').catch(err => {
-    t.ok(err instanceof Error, 'should throw error for unknown methods')
+    t.ok(err instanceof Error, 'should throw unknown methods error')
+  })
+  client.call('task', null, { timeout: 100 }).catch(err => {
+    t.ok(err instanceof Error, 'should throw timeout exceeded error')
+  })
+  client.call('error').catch(err => {
+    t.ok(err instanceof Error, 'should throw RPC server error')
   })
 })

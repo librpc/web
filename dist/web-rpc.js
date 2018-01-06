@@ -129,7 +129,7 @@ var RpcClient = (function (EventEmitter$$1) {
     var uid = uuid();
     var transferables = peekTransferables(data);
     return new Promise(function (resolve, reject) {
-      this$1.timeouts[uid] = setTimeout(function () { return this$1.reject(("RPC timeout exceeded for '" + method + "' call")); }, timeout);
+      this$1.timeouts[uid] = setTimeout(function () { return this$1.reject(uid, ("Timeout exceeded for RPC method \"" + method + "\"")); }, timeout);
       this$1.calls[uid] = resolve;
       this$1.errors[uid] = reject;
       this$1.workers[this$1.idx].postMessage({ method: method, uid: uid, data: data }, transferables);
@@ -163,7 +163,7 @@ RpcServer.prototype.handler = function handler (e) {
       function (error) { return this$1.throw(uid, error); }
     );
   } else {
-    this.throw(uid, ("Unknown RPC method: " + method));
+    this.throw(uid, ("Unknown RPC method \"" + method + "\""));
   }
 };
 
