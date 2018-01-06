@@ -75,7 +75,7 @@ rpcClient.call('error')
 
 ### WebRPC.Server
 
-#### `#constructor(methods)`
+#### `#constructor(methods: { [string]: (*) => Promise<*> | * })`
 
 ```js
 var server = new RpcServer({
@@ -87,7 +87,7 @@ var server = new RpcServer({
 })
 ```
 
-#### `#emit(eventName, data)`
+#### `#emit(eventName: string, data: *)`
 
 ```js
 setInterval(() => {
@@ -97,28 +97,28 @@ setInterval(() => {
 
 ### WebRPC.Client
 
-#### `#constructor({ worker })`
+#### `#constructor(options: { workers: Array<Worker> })`
 
 ```js
 var worker = new window.Worker('server.js')
-var client = new RpcClient({ worker })
+var client = new RpcClient({ workers: [worker] })
 ```
 
-#### `#call(method, data, { timeout = 2000 })`
+#### `#call(method: string, data: *, { timeout = 2000 } = {}): Promise<*>`
 
 ```js
 client.call('pow', { x: 2, y: 10 })
   .then(result => console.log(result))
 ```
 
-#### `#on(eventName, listener)`
+#### `#on(eventName: string, listener: (*) => void)`
 
 ```js
 function listener (data) { console.log(data) }
 client.on('update', listener)
 ```
 
-#### `#off(eventName, listener)`
+#### `#off(eventName: string, listener: (*) => void)`
 
 ```js
 client.off('update', listener)
