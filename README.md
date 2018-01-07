@@ -46,7 +46,8 @@ function wait (time) {
 self.rpcServer = new RpcServer({
   add ({ x, y }) { return x + y },
   task () { return wait(1000) },
-  error () { return err }
+  error () { return err },
+  transfer (buffer) { return { buffer }}
 })
 ```
 
@@ -69,6 +70,9 @@ rpcClient.call('task', null, { timeout: 100 })
 
 rpcClient.call('error')
   .catch(err => console.log(err)) // ReferenceError: err is not defined
+
+rpcClient.call('transfer', new ArrayBuffer(0xff))
+  .then(res => console.log(res.buffer)) // ArrayBuffer(255)
 ```
 
 ## API

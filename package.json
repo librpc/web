@@ -47,7 +47,7 @@
     "uglify-js": "3.0.28"
   },
   "scripts": {
-    "check": "standard src/*.js | snazzy",
+    "check": "standard src/*.js test/*.js | snazzy",
     "build": "rollup -c",
     "test": "nyc --reporter=html --reporter=lcov --reporter=text tape test/index.test.js",
     "min": "uglifyjs dist/web-rpc.umd.js -c -m > dist/web-rpc.min.js",

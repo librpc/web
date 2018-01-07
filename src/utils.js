@@ -6,15 +6,12 @@ export function isTransferable (object) {
   return object instanceof ArrayBuffer
 }
 
-export function peekTransferables (data) {
-  var result = []
+export function peekTransferables (data, result = []) {
   if (isTransferable(data)) {
     result.push(data)
   } else if (isObject(data)) {
     for (var i in data) {
-      if (isTransferable(data[i])) {
-        result.push(data[i])
-      }
+      peekTransferables(data[i], result)
     }
   }
   return result
