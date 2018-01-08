@@ -16,7 +16,7 @@ class RpcServer {
     if (this.methods[method]) {
       Promise.resolve(data).then(this.methods[method]).then(
         data => this.reply(uid, method, data),
-        error => this.throw(uid, error)
+        error => this.throw(uid, String(error))
       )
     } else {
       this.throw(uid, `Unknown RPC method "${method}"`)

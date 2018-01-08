@@ -159,7 +159,7 @@ RpcServer.prototype.handler = function handler (e) {
   if (this.methods[method]) {
     Promise.resolve(data).then(this.methods[method]).then(
       function (data) { return this$1.reply(uid, method, data); },
-      function (error) { return this$1.throw(uid, error); }
+      function (error) { return this$1.throw(uid, String(error)); }
     );
   } else {
     this.throw(uid, ("Unknown RPC method \"" + method + "\""));
