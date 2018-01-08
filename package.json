@@ -1,7 +1,7 @@
 {
   "name": "@librpc/web",
   "version": "0.0.1",
-  "description": "Promise based cross worker rpc client and server",
+  "description": "Promise-based RPC client and server for web workers",
   "keywords": [
     "rpc",
     "worker",
