@@ -1,4 +1,4 @@
-<h1 align="center">Promise based cross worker rpc client and server</h1>
+<h1 align="center">Promise-based RPC client and server for web workers</h1>
 <p align="center">
   <a href="https://www.npmjs.com/package/@librpc/web" target="_blank">
     <img src="https://img.shields.io/npm/v/@librpc/web.svg" alt="NPM version" target="_blank"></img>
@@ -27,11 +27,11 @@
 
 ## Features
 
-- Promise based easiest API as possible
+- Promise-based API as easy as possible
 - Load balancing with round robin strategy
-- Error handling
 - Transferables support
-- Server Events
+- Server events
+- Error handling
 - High performance
 
 ## Install
@@ -100,6 +100,8 @@ var server = new RpcServer({
 })
 ```
 
+Every passed method becomes remote procedure. It can return Promise if it is needed. Only ArrayBuffers will be transferred automatically (not TypedArrays). Errors thrown by procedures would be handled by server.
+
 #### `#emit(eventName: string, data: *)`
 
 ```js
@@ -107,6 +109,8 @@ setInterval(() => {
   server.emit('update', Date.now())
 }, 50)
 ```
+
+Trigger server event.
 
 ### WebRPC.Client
 
@@ -117,12 +121,21 @@ var worker = new window.Worker('server.js')
 var client = new RpcClient({ workers: [worker] })
 ```
 
+Client could be connected to several workers for better CPU utilization. Requests are sent to an exact worker by round robin algorithm.
+
 #### `#call(method: string, data: *, { timeout = 2000 } = {}): Promise<*>`
 
 ```js
 client.call('pow', { x: 2, y: 10 })
   .then(result => console.log(result))
 ```
+
+Remote procedure call. Only ArrayBuffers will be transferred automatically (not TypedArrays).
+
+Error would be thrown, if:
+- it happened during procedure
+- you try to call an unexisted procedure
+- procedure execution takes more than `timeout`
 
 #### `#on(eventName: string, listener: (*) => void)`
 
@@ -131,11 +144,15 @@ function listener (data) { console.log(data) }
 client.on('update', listener)
 ```
 
+Start listen to server events.
+
 #### `#off(eventName: string, listener: (*) => void)`
 
 ```js
 client.off('update', listener)
 ```
+
+Stop listen to server events.
 
 ## Development
 
