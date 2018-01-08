@@ -1,5 +1,8 @@
 <h1 align="center">Promise based cross worker rpc client and server</h1>
 <p align="center">
+  <a href="https://www.npmjs.com/package/@librpc/web" target="_blank">
+    <img src="https://img.shields.io/npm/v/@librpc/web.svg" alt="NPM version" target="_blank"></img>
+  </a>
   <a href="https://travis-ci.org/librpc/web" target="_blank">
     <img src="https://travis-ci.org/librpc/web.svg?branch=master" alt="Build Status" target="_blank"></img>
   </a>
@@ -32,6 +35,12 @@
 - High performance
 
 ## Install
+
+```
+npm install --save @librpc/web
+```
+
+or download [dev](https://unpkg.com/@librpc/web/dist/web-rpc.umd.js) or [prod](https://unpkg.com/@librpc/web/dist/web-rpc.min.js) version
 
 ## Usage
 
@@ -134,4 +143,5 @@ Command | Description
 ------- | -----------
 `npm run check` | Check standard code style by [snazzy](https://www.npmjs.com/package/snazzy)
 `npm run build` | Wrap source code in [UMD](https://github.com/umdjs/umd) by [rollup](http://rollupjs.org/)
+`npm run test` | Run tests by [tape](https://github.com/substack/tape) and compute code coverage by [nyc](https://github.com/bcoe/nyc)
 `npm run min` | Minify code by [UglifyJS2](https://github.com/mishoo/UglifyJS2)
