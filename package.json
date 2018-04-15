@@ -52,6 +52,7 @@
     "build": "rollup -c",
     "test": "nyc --reporter=html --reporter=lcov --reporter=text tape test/index.test.js",
     "min": "uglifyjs dist/web-rpc.umd.js -c -m > dist/web-rpc.min.js",
+    "docs": "jsdoc2md src/*",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   }
 }
