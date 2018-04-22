@@ -293,6 +293,7 @@
 
   /**
    * Trigger server event
+   * Only ArrayBuffers will be transferred automatically (not TypedArrays).
    * @param {string} eventName Event name
    * @param {*}    data    Any data
    * @example
@@ -302,10 +303,9 @@
    * }, 50)
    */
   RpcServer.prototype.emit = function emit (eventName, data) {
-    self.postMessage({
-      eventName: eventName,
-      data: data
-    });
+    var transferables = peekTransferables(data);
+
+    self.postMessage({ eventName: eventName, data: data }, transferables);
   };
 
   var index = {

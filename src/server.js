@@ -82,6 +82,7 @@ class RpcServer {
 
   /**
    * Trigger server event
+   * Only ArrayBuffers will be transferred automatically (not TypedArrays).
    * @param {string} eventName Event name
    * @param {*}      data      Any data
    * @example
@@ -91,10 +92,9 @@ class RpcServer {
    * }, 50)
    */
   emit (eventName, data) {
-    self.postMessage({
-      eventName,
-      data
-    })
+    var transferables = peekTransferables(data)
+
+    self.postMessage({ eventName, data }, transferables)
   }
 }
 
