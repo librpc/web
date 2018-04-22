@@ -82,14 +82,30 @@
     return this
   };
 
+  /**
+   * Ensure that passed value is object
+   * @param  {*}       object Value to check
+   * @return {boolean}        Check result
+   */
   function isObject (object) {
     return Object(object) === object
   }
 
+  /**
+   * Ensure that passed value could be transfer
+   * @param  {*}       object Value to check
+   * @return {boolean}        Check result
+   */
   function isTransferable (object) {
     return object instanceof ArrayBuffer
   }
 
+  /**
+   * Recursively peek transferables from passed data
+   * @param  {*}             data        Data source
+   * @param  {Array}         [result=[]] Dist array
+   * @return {ArrayBuffer[]}             List of transferables objects
+   */
   function peekTransferables (data, result) {
     if ( result === void 0 ) result = [];
 
@@ -103,6 +119,9 @@
     return result
   }
 
+  /**
+   * @return {string} Uniq uid
+   */
   function uuid () {
     return Math.floor((1 + Math.random()) * 1e10).toString(16)
   }
@@ -118,17 +137,21 @@
       this.timeouts = {};
       this.errors = {};
       this.handler = this.handler.bind(this);
-      this.listen();
+      this.catch = this.catch.bind(this);
+      this.init();
     }
 
     if ( EventEmitter ) RpcClient.__proto__ = EventEmitter;
     RpcClient.prototype = Object.create( EventEmitter && EventEmitter.prototype );
     RpcClient.prototype.constructor = RpcClient;
 
-    RpcClient.prototype.listen = function listen () {
-      var this$1 = this;
+    RpcClient.prototype.init = function init () {
+      this.workers.forEach(this.listen, this);
+    };
 
-      this.workers.forEach(function (worker) { return worker.addEventListener('message', this$1.handler); });
+    RpcClient.prototype.listen = function listen (worker) {
+      worker.addEventListener('message', this.handler);
+      worker.addEventListener('error', this.catch);
     };
 
     RpcClient.prototype.handler = function handler (e) {
@@ -145,6 +168,18 @@
       } else if (eventName) {
         this.emit(eventName, data);
       }
+    };
+
+    RpcClient.prototype.catch = function catch$1 (ref) {
+      var message = ref.message;
+      var lineno = ref.lineno;
+      var filename = ref.filename;
+
+      this.emit('error', {
+        message: message,
+        lineno: lineno,
+        filename: filename
+      });
     };
 
     RpcClient.prototype.reject = function reject (uid, error) {
@@ -189,15 +224,34 @@
 
   /* eslint-env serviceworker */
 
+  /**
+   * @callback Procedure
+   * @param  {*}           data Any data
+   * @return {(Promise|*)}
+   */
+
   var RpcServer = function RpcServer (methods) {
     this.methods = methods;
     this.listen();
   };
 
+  /**
+   * Subscribtion to "message" events
+   * @protected
+   */
   RpcServer.prototype.listen = function listen () {
     self.addEventListener('message', this.handler.bind(this));
   };
 
+  /**
+   * Handle "message" events, invoke remote procedure if it possible
+   * @param {Event}e           Message event object
+   * @param {Object} e.data      Event data
+   * @param {string} e.data.method Procedure name
+   * @param {number} e.data.uid  Unique id of rpc call
+   * @param {*}    e.data.data Procedure params
+   * @protected
+   */
   RpcServer.prototype.handler = function handler (e) {
       var this$1 = this;
 
@@ -215,15 +269,38 @@
     }
   };
 
+  /**
+   * Replay to remote call
+   * @param {number} uid  Unique id of rpc call
+   * @param {string} method Procedure name
+   * @param {*}    data Call result, could be any data
+   * @protected
+   */
   RpcServer.prototype.reply = function reply (uid, method, data) {
     var transferables = peekTransferables(data);
     self.postMessage({ uid: uid, method: method, data: data }, transferables);
   };
 
+  /**
+   * Throw error
+   * @param {number} uid Unique id of rpc call
+   * @param {string} error Error description
+   * @protected
+   */
   RpcServer.prototype.throw = function throw$1 (uid, error) {
     self.postMessage({ uid: uid, error: error });
   };
 
+  /**
+   * Trigger server event
+   * @param {string} eventName Event name
+   * @param {*}    data    Any data
+   * @example
+   *
+   * setInterval(() => {
+   * server.emit('update', Date.now())
+   * }, 50)
+   */
   RpcServer.prototype.emit = function emit (eventName, data) {
     self.postMessage({
       eventName: eventName,

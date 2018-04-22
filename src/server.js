@@ -8,13 +8,21 @@ import { peekTransferables } from './utils.js'
  */
 
 class RpcServer {
-
   /**
    * Every passed method becomes remote procedure.
    * It can return Promise if it is needed.
    * Only ArrayBuffers will be transferred automatically (not TypedArrays).
    * Errors thrown by procedures would be handled by server.
    * @param {Object.<string, Procedure>} methods Dictionary of remote procedures
+   * @example
+   *
+   * var server = new RpcServer({
+   *   add ({ x, y }) { return x + y },
+   *   sub ({ x, y }) { return x - y },
+   *   mul ({ x, y }) { return x * y },
+   *   div ({ x, y }) { return x / y },
+   *   pow ({ x, y }) { return x ** y }
+   * })
    */
   constructor (methods) {
     this.methods = methods
@@ -56,15 +64,6 @@ class RpcServer {
    * @param {string} method Procedure name
    * @param {*}      data   Call result, could be any data
    * @protected
-   * @example
-   *
-   * var server = new RpcServer({
-   *   add ({ x, y }) { return x + y },
-   *   sub ({ x, y }) { return x - y },
-   *   mul ({ x, y }) { return x * y },
-   *   div ({ x, y }) { return x / y },
-   *   pow ({ x, y }) { return x ** y }
-   * })
    */
   reply (uid, method, data) {
     var transferables = peekTransferables(data)

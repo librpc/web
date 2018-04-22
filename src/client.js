@@ -10,11 +10,17 @@ class RpcClient extends EventEmitter {
     this.timeouts = {}
     this.errors = {}
     this.handler = this.handler.bind(this)
-    this.listen()
+    this.catch = this.catch.bind(this)
+    this.init()
   }
 
-  listen () {
-    this.workers.forEach(worker => worker.addEventListener('message', this.handler))
+  init () {
+    this.workers.forEach(this.listen, this)
+  }
+
+  listen (worker) {
+    worker.addEventListener('message', this.handler)
+    worker.addEventListener('error', this.catch)
   }
 
   handler (e) {
@@ -26,6 +32,14 @@ class RpcClient extends EventEmitter {
     } else if (eventName) {
       this.emit(eventName, data)
     }
+  }
+
+  catch ({ message, lineno, filename }) {
+    this.emit('error', {
+      message,
+      lineno,
+      filename
+    })
   }
 
   reject (uid, error) {
