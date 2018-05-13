@@ -14,17 +14,37 @@ class RpcClient extends EventEmitter {
     this.init()
   }
 
+  /**
+   * Subscribtion to web workers events
+   * @protected
+   */
   init () {
     this.workers.forEach(this.listen, this)
   }
 
+  /**
+   * Subsrciption to exact worker
+   * @param {WebWorker} worker Server worker
+   * @proteced
+   */
   listen (worker) {
     worker.addEventListener('message', this.handler)
     worker.addEventListener('error', this.catch)
   }
 
+  /**
+   * Message handler
+   * @param {Event}  e               Event object
+   * @param {Object} e.data          Message event data
+   * @param {number} e.data.uid      Remote call uid
+   * @param {string} [e.data.error]  Error discription
+   * @param {string} [e.data.method] Remote procedure name
+   * @param {string} [e.data.event]  Server event name
+   * @param {*}      [e.data.data]   Procedure result or event data
+   * @protected
+   */
   handler (e) {
-    var { error, method, eventName, data, uid } = e.data
+    var { uid, error, method, eventName, data } = e.data
     if (error) {
       this.reject(uid, error)
     } else if (method) {
@@ -34,6 +54,14 @@ class RpcClient extends EventEmitter {
     }
   }
 
+  /**
+   * Error handler
+   * https://www.nczonline.net/blog/2009/08/25/web-workers-errors-and-debugging/
+   * @param  {string} options.message  Error message
+   * @param  {number} options.lineno   Line number
+   * @param  {string} options.filename Filename
+   * @protected
+   */
   catch ({ message, lineno, filename }) {
     this.emit('error', {
       message,

@@ -139,22 +139,42 @@ var RpcClient = (function (EventEmitter) {
   RpcClient.prototype = Object.create( EventEmitter && EventEmitter.prototype );
   RpcClient.prototype.constructor = RpcClient;
 
+  /**
+   * Subscribtion to web workers events
+   * @protected
+   */
   RpcClient.prototype.init = function init () {
     this.workers.forEach(this.listen, this);
   };
 
+  /**
+   * Subsrciption to exact worker
+   * @param {WebWorker} worker Server worker
+   * @proteced
+   */
   RpcClient.prototype.listen = function listen (worker) {
     worker.addEventListener('message', this.handler);
     worker.addEventListener('error', this.catch);
   };
 
+  /**
+   * Message handler
+   * @param {Event}  e               Event object
+   * @param {Object} e.data          Message event data
+   * @param {number} e.data.uid      Remote call uid
+   * @param {string} [e.data.error]  Error discription
+   * @param {string} [e.data.method] Remote procedure name
+   * @param {string} [e.data.event]  Server event name
+   * @param {*}      [e.data.data]   Procedure result or event data
+   * @protected
+   */
   RpcClient.prototype.handler = function handler (e) {
     var ref = e.data;
+    var uid = ref.uid;
     var error = ref.error;
     var method = ref.method;
     var eventName = ref.eventName;
     var data = ref.data;
-    var uid = ref.uid;
     if (error) {
       this.reject(uid, error);
     } else if (method) {
@@ -164,6 +184,14 @@ var RpcClient = (function (EventEmitter) {
     }
   };
 
+  /**
+   * Error handler
+   * https://www.nczonline.net/blog/2009/08/25/web-workers-errors-and-debugging/
+   * @param  {string} options.message  Error message
+   * @param  {number} options.lineno   Line number
+   * @param  {string} options.filename Filename
+   * @protected
+   */
   RpcClient.prototype.catch = function catch$1 (ref) {
     var message = ref.message;
     var lineno = ref.lineno;
