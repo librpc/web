@@ -2,6 +2,11 @@ import EventEmitter from '@librpc/ee'
 import { peekTransferables, uuid } from './utils.js'
 
 class RpcClient extends EventEmitter {
+  /**
+   * Client could be connected to several workers for better CPU utilization.
+   * Requests are sent to an exact worker by round robin algorithm.
+   * @param {WebWorker[]} options.workers List of server workers
+   */
   constructor ({ workers }) {
     super()
     this.workers = [...workers]
@@ -10,15 +15,41 @@ class RpcClient extends EventEmitter {
     this.timeouts = {}
     this.errors = {}
     this.handler = this.handler.bind(this)
-    this.listen()
+    this.catch = this.catch.bind(this)
+    this.init()
   }
 
-  listen () {
-    this.workers.forEach(worker => worker.addEventListener('message', this.handler))
+  /**
+   * Subscribtion to web workers events
+   * @protected
+   */
+  init () {
+    this.workers.forEach(this.listen, this)
   }
 
+  /**
+   * Subsrciption to exact worker
+   * @param {WebWorker} worker Server worker
+   * @proteced
+   */
+  listen (worker) {
+    worker.addEventListener('message', this.handler)
+    worker.addEventListener('error', this.catch)
+  }
+
+  /**
+   * Message handler
+   * @param {Event}  e               Event object
+   * @param {Object} e.data          Message event data
+   * @param {number} e.data.uid      Remote call uid
+   * @param {string} [e.data.error]  Error discription
+   * @param {string} [e.data.method] Remote procedure name
+   * @param {string} [e.data.event]  Server event name
+   * @param {*}      [e.data.data]   Procedure result or event data
+   * @protected
+   */
   handler (e) {
-    var { error, method, eventName, data, uid } = e.data
+    var { uid, error, method, eventName, data } = e.data
     if (error) {
       this.reject(uid, error)
     } else if (method) {
@@ -28,6 +59,28 @@ class RpcClient extends EventEmitter {
     }
   }
 
+  /**
+   * Error handler
+   * https://www.nczonline.net/blog/2009/08/25/web-workers-errors-and-debugging/
+   * @param  {string} options.message  Error message
+   * @param  {number} options.lineno   Line number
+   * @param  {string} options.filename Filename
+   * @protected
+   */
+  catch ({ message, lineno, filename }) {
+    this.emit('error', {
+      message,
+      lineno,
+      filename
+    })
+  }
+
+  /**
+   * Handle remote procedure call error
+   * @param {string} uid   Remote call uid
+   * @param {strint} error Error message
+   * @protected
+   */
   reject (uid, error) {
     if (this.errors[uid]) {
       this.errors[uid](new Error(error))
@@ -35,6 +88,12 @@ class RpcClient extends EventEmitter {
     }
   }
 
+  /**
+   * Handle remote procedure call response
+   * @param {string} uid  Remote call uid
+   * @param {*}      data Response data
+   * @protected
+   */
   resolve (uid, data) {
     if (this.calls[uid]) {
       this.calls[uid](data)
@@ -42,6 +101,11 @@ class RpcClient extends EventEmitter {
     }
   }
 
+  /**
+   * Clear inner references to remote call
+   * @param {string} uid Remote call uid
+   * @protected
+   */
   clear (uid) {
     clearTimeout(this.timeouts[uid])
     delete this.timeouts[uid]
@@ -49,6 +113,18 @@ class RpcClient extends EventEmitter {
     delete this.errors[uid]
   }
 
+  /**
+   * Remote procedure call. Only ArrayBuffers will be transferred automatically (not TypedArrays).
+   * Error would be thrown, if:
+   * - it happened during procedure
+   * - you try to call an unexisted procedure
+   * - procedure execution takes more than timeout
+   * @param  {string}     method                 Remote procedure name
+   * @param  {*}          data                   Request data
+   * @param  {Object}     [options]              Options
+   * @param  {number}     [options.timeout=2000] Wait timeout
+   * @return {Promise<*>}                        Remote procedure promise
+   */
   call (method, data, { timeout = 2000 } = {}) {
     var uid = uuid()
     var transferables = peekTransferables(data)

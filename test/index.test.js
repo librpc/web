@@ -61,7 +61,8 @@ test('RpcServer.emit()', t => {
 test('RpcClient.constructor() should create new RPC client', t => {
   t.ok(client instanceof WebRPC.Client, 'should create new RPC client')
   t.equal(client.workers.length, 1, 'should have passed workers')
-  t.deepEqual(global.worker.eventNames(), ['message'], 'should listen "message" event')
+  t.deepEqual(global.worker.eventNames(), ['message', 'error'], 'should listen "message" and "error" event')
+  global.worker.emit('error', { message: 'Some error', lineno: 42, filename: 'worker.js' })
   t.end()
 })
 
