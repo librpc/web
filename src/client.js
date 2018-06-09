@@ -2,6 +2,11 @@ import EventEmitter from '@librpc/ee'
 import { peekTransferables, uuid } from './utils.js'
 
 class RpcClient extends EventEmitter {
+  /**
+   * Client could be connected to several workers for better CPU utilization.
+   * Requests are sent to an exact worker by round robin algorithm.
+   * @param {WebWorker[]} options.workers List of server workers
+   */
   constructor ({ workers }) {
     super()
     this.workers = [...workers]
@@ -70,6 +75,12 @@ class RpcClient extends EventEmitter {
     })
   }
 
+  /**
+   * Handle remote procedure call error
+   * @param {string} uid   Remote call uid
+   * @param {strint} error Error message
+   * @protected
+   */
   reject (uid, error) {
     if (this.errors[uid]) {
       this.errors[uid](new Error(error))
@@ -77,6 +88,12 @@ class RpcClient extends EventEmitter {
     }
   }
 
+  /**
+   * Handle remote procedure call response
+   * @param {string} uid  Remote call uid
+   * @param {*}      data Response data
+   * @protected
+   */
   resolve (uid, data) {
     if (this.calls[uid]) {
       this.calls[uid](data)
@@ -84,6 +101,11 @@ class RpcClient extends EventEmitter {
     }
   }
 
+  /**
+   * Clear inner references to remote call
+   * @param {string} uid Remote call uid
+   * @protected
+   */
   clear (uid) {
     clearTimeout(this.timeouts[uid])
     delete this.timeouts[uid]
@@ -91,6 +113,18 @@ class RpcClient extends EventEmitter {
     delete this.errors[uid]
   }
 
+  /**
+   * Remote procedure call. Only ArrayBuffers will be transferred automatically (not TypedArrays).
+   * Error would be thrown, if:
+   * - it happened during procedure
+   * - you try to call an unexisted procedure
+   * - procedure execution takes more than timeout
+   * @param  {string}     method                 Remote procedure name
+   * @param  {*}          data                   Request data
+   * @param  {Object}     [options]              Options
+   * @param  {number}     [options.timeout=2000] Wait timeout
+   * @return {Promise<*>}                        Remote procedure promise
+   */
   call (method, data, { timeout = 2000 } = {}) {
     var uid = uuid()
     var transferables = peekTransferables(data)

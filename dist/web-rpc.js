@@ -204,6 +204,12 @@ var RpcClient = (function (EventEmitter) {
     });
   };
 
+  /**
+   * Handle remote procedure call error
+   * @param {string} uid   Remote call uid
+   * @param {strint} error Error message
+   * @protected
+   */
   RpcClient.prototype.reject = function reject (uid, error) {
     if (this.errors[uid]) {
       this.errors[uid](new Error(error));
@@ -211,6 +217,12 @@ var RpcClient = (function (EventEmitter) {
     }
   };
 
+  /**
+   * Handle remote procedure call response
+   * @param {string} uid  Remote call uid
+   * @param {*}      data Response data
+   * @protected
+   */
   RpcClient.prototype.resolve = function resolve (uid, data) {
     if (this.calls[uid]) {
       this.calls[uid](data);
@@ -218,6 +230,11 @@ var RpcClient = (function (EventEmitter) {
     }
   };
 
+  /**
+   * Clear inner references to remote call
+   * @param {string} uid Remote call uid
+   * @protected
+   */
   RpcClient.prototype.clear = function clear (uid) {
     clearTimeout(this.timeouts[uid]);
     delete this.timeouts[uid];
@@ -225,6 +242,18 @@ var RpcClient = (function (EventEmitter) {
     delete this.errors[uid];
   };
 
+  /**
+   * Remote procedure call. Only ArrayBuffers will be transferred automatically (not TypedArrays).
+   * Error would be thrown, if:
+   * - it happened during procedure
+   * - you try to call an unexisted procedure
+   * - procedure execution takes more than timeout
+   * @param  {string}     method                 Remote procedure name
+   * @param  {*}          data                   Request data
+   * @param  {Object}     [options]              Options
+   * @param  {number}     [options.timeout=2000] Wait timeout
+   * @return {Promise<*>}                        Remote procedure promise
+   */
   RpcClient.prototype.call = function call (method, data, ref) {
     var this$1 = this;
     if ( ref === void 0 ) ref = {};
@@ -292,7 +321,7 @@ RpcServer.prototype.handler = function handler (e) {
 };
 
 /**
- * Replay to remote call
+ * Reply to remote call
  * @param {number} uid  Unique id of rpc call
  * @param {string} method Procedure name
  * @param {*}    data Call result, could be any data

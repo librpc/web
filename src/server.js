@@ -59,7 +59,7 @@ class RpcServer {
   }
 
   /**
-   * Replay to remote call
+   * Reply to remote call
    * @param {number} uid    Unique id of rpc call
    * @param {string} method Procedure name
    * @param {*}      data   Call result, could be any data
