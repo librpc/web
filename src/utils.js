@@ -13,7 +13,14 @@ export function isObject (object) {
  * @return {boolean}        Check result
  */
 export function isTransferable (object) {
-  return object instanceof ArrayBuffer
+  try {
+    return object instanceof ArrayBuffer
+      || object instanceof ImageBitmap
+      || object instanceof OffscreenCanvas
+      || object instanceof MessagePort
+  } catch(error) {
+    return false
+  }
 }
 
 /**
