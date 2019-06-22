@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global.WebRPC = factory());
-}(this, (function () { 'use strict';
+  (global = global || self, global.WebRPC = factory());
+}(this, function () { 'use strict';
 
   /**
    * @callback listener
@@ -126,7 +126,7 @@
     return Math.floor((1 + Math.random()) * 1e10).toString(16)
   }
 
-  var RpcClient = (function (EventEmitter) {
+  var RpcClient = /*@__PURE__*/(function (EventEmitter) {
     function RpcClient (ref) {
       var workers = ref.workers;
 
@@ -368,8 +368,8 @@
   var index = {
     Client: RpcClient,
     Server: RpcServer
-  }
+  };
 
   return index;
 
-})));
+}));

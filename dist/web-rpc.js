@@ -120,7 +120,7 @@ function uuid () {
   return Math.floor((1 + Math.random()) * 1e10).toString(16)
 }
 
-var RpcClient = (function (EventEmitter) {
+var RpcClient = /*@__PURE__*/(function (EventEmitter) {
   function RpcClient (ref) {
     var workers = ref.workers;
 
@@ -362,6 +362,6 @@ RpcServer.prototype.emit = function emit (eventName, data) {
 var index = {
   Client: RpcClient,
   Server: RpcServer
-}
+};
 
 export default index;
