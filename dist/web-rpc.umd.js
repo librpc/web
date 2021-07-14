@@ -133,7 +133,7 @@
     return Math.floor((1 + Math.random()) * 1e10).toString(16)
   }
 
-  var RpcClient = (function (EventEmitter) {
+  var RpcClient = /*@__PURE__*/(function (EventEmitter) {
     function RpcClient (ref) {
       var workers = ref.workers;
 
@@ -172,13 +172,14 @@
 
     /**
      * Message handler
-     * @param {Event}  e               Event object
-     * @param {Object} e.data          Message event data
-     * @param {number} e.data.uid      Remote call uid
-     * @param {string} [e.data.error]  Error discription
-     * @param {string} [e.data.method] Remote procedure name
-     * @param {string} [e.data.event]  Server event name
-     * @param {*}      [e.data.data]   Procedure result or event data
+     * @param {Event}   e               Event object
+     * @param {Object}  e.data          Message event data
+     * @param {number}  e.data.uid      Remote call uid
+     * @param {boolean} e.data.libRpc   `true` flag
+     * @param {string}  [e.data.error]  Error discription
+     * @param {string}  [e.data.method] Remote procedure name
+     * @param {string}  [e.data.event]  Server event name
+     * @param {*}       [e.data.data]   Procedure result or event data
      * @protected
      */
     RpcClient.prototype.handler = function handler (e) {
@@ -188,6 +189,10 @@
       var method = ref.method;
       var eventName = ref.eventName;
       var data = ref.data;
+      var libRpc = ref.libRpc;
+
+      if (!libRpc) { return } // ignore non-librpc messages
+
       if (error) {
         this.reject(uid, error);
       } else if (method) {
@@ -200,21 +205,25 @@
     /**
      * Error handler
      * https://www.nczonline.net/blog/2009/08/25/web-workers-errors-and-debugging/
-     * @param  {string} options.message  Error message
-     * @param  {number} options.lineno   Line number
-     * @param  {string} options.filename Filename
+     * @param  {string}  options.message  Error message
+     * @param  {number}  options.lineno   Line number
+     * @param  {string}  options.filename Filename
+     * @param  {boolean} options.libRpc   Error ignored if this is not true
      * @protected
      */
     RpcClient.prototype.catch = function catch$1 (ref) {
-      var message = ref.message;
-      var lineno = ref.lineno;
-      var filename = ref.filename;
+        var message = ref.message;
+        var lineno = ref.lineno;
+        var filename = ref.filename;
+        var libRpc = ref.libRpc;
 
-      this.emit('error', {
-        message: message,
-        lineno: lineno,
-        filename: filename
-      });
+        if (libRpc) {
+          this.emit('error', {
+          message: message,
+          lineno: lineno,
+          filename: filename
+          });
+      }
     };
 
     /**
@@ -278,7 +287,7 @@
         this$1.timeouts[uid] = setTimeout(function () { return this$1.reject(uid, ("Timeout exceeded for RPC method \"" + method + "\"")); }, timeout);
         this$1.calls[uid] = resolve;
         this$1.errors[uid] = reject;
-        this$1.workers[this$1.idx].postMessage({ method: method, uid: uid, data: data }, transferables);
+        this$1.workers[this$1.idx].postMessage({ method: method, uid: uid, data: data, libRpc: true }, transferables);
         this$1.idx = ++this$1.idx % this$1.workers.length; // round robin
       })
     };
@@ -309,20 +318,25 @@
 
   /**
    * Handle "message" events, invoke remote procedure if it possible
-   * @param {Event}e           Message event object
-   * @param {Object} e.data      Event data
-   * @param {string} e.data.method Procedure name
-   * @param {number} e.data.uid  Unique id of rpc call
-   * @param {*}    e.data.data Procedure params
+   * @param {Event} e           Message event object
+   * @param {Object}e.data      Event data
+   * @param {string}e.data.method Procedure name
+   * @param {number}e.data.uid  Unique id of rpc call
+   * @param {boolean} e.data.libRpc True/false flag of whether the message is handled by this library
+   * @param {*}     e.data.data Procedure params
    * @protected
    */
   RpcServer.prototype.handler = function handler (e) {
       var this$1 = this;
 
     var ref = e.data;
+      var libRpc = ref.libRpc;
       var method = ref.method;
       var uid = ref.uid;
       var data = ref.data;
+
+    if (!libRpc) { return } // ignore non-librpc messages
+
     if (this.methods[method]) {
       Promise.resolve(data).then(this.methods[method]).then(
         function (data) { return this$1.reply(uid, method, data); },
@@ -342,7 +356,7 @@
    */
   RpcServer.prototype.reply = function reply (uid, method, data) {
     var transferables = peekTransferables(data);
-    self.postMessage({ uid: uid, method: method, data: data }, transferables);
+    self.postMessage({ uid: uid, method: method, data: data, libRpc: true }, transferables);
   };
 
   /**
@@ -352,7 +366,7 @@
    * @protected
    */
   RpcServer.prototype.throw = function throw$1 (uid, error) {
-    self.postMessage({ uid: uid, error: error });
+    self.postMessage({ uid: uid, error: error, libRpc: true });
   };
 
   /**
@@ -369,7 +383,7 @@
   RpcServer.prototype.emit = function emit (eventName, data) {
     var transferables = peekTransferables(data);
 
-    self.postMessage({ eventName: eventName, data: data }, transferables);
+    self.postMessage({ eventName: eventName, data: data, libRpc: true }, transferables);
   };
 
   var index = {

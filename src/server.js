@@ -39,15 +39,19 @@ class RpcServer {
 
   /**
    * Handle "message" events, invoke remote procedure if it possible
-   * @param {Event}  e             Message event object
-   * @param {Object} e.data        Event data
-   * @param {string} e.data.method Procedure name
-   * @param {number} e.data.uid    Unique id of rpc call
-   * @param {*}      e.data.data   Procedure params
+   * @param {Event}   e             Message event object
+   * @param {Object}  e.data        Event data
+   * @param {string}  e.data.method Procedure name
+   * @param {number}  e.data.uid    Unique id of rpc call
+   * @param {boolean} e.data.libRpc True/false flag of whether the message is handled by this library
+   * @param {*}       e.data.data   Procedure params
    * @protected
    */
   handler (e) {
-    var { method, uid, data } = e.data
+    var { libRpc, method, uid, data } = e.data
+
+    if (!libRpc) return // ignore non-librpc messages
+
     if (this.methods[method]) {
       Promise.resolve(data).then(this.methods[method]).then(
         data => this.reply(uid, method, data),
@@ -67,7 +71,7 @@ class RpcServer {
    */
   reply (uid, method, data) {
     var transferables = peekTransferables(data)
-    self.postMessage({ uid, method, data }, transferables)
+    self.postMessage({ uid, method, data, libRpc: true }, transferables)
   }
 
   /**
@@ -77,7 +81,7 @@ class RpcServer {
    * @protected
    */
   throw (uid, error) {
-    self.postMessage({ uid, error })
+    self.postMessage({ uid, error, libRpc: true })
   }
 
   /**
@@ -94,7 +98,7 @@ class RpcServer {
   emit (eventName, data) {
     var transferables = peekTransferables(data)
 
-    self.postMessage({ eventName, data }, transferables)
+    self.postMessage({ eventName, data, libRpc: true }, transferables)
   }
 }
 

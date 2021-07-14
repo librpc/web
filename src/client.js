@@ -39,17 +39,21 @@ class RpcClient extends EventEmitter {
 
   /**
    * Message handler
-   * @param {Event}  e               Event object
-   * @param {Object} e.data          Message event data
-   * @param {number} e.data.uid      Remote call uid
-   * @param {string} [e.data.error]  Error discription
-   * @param {string} [e.data.method] Remote procedure name
-   * @param {string} [e.data.event]  Server event name
-   * @param {*}      [e.data.data]   Procedure result or event data
+   * @param {Event}   e               Event object
+   * @param {Object}  e.data          Message event data
+   * @param {number}  e.data.uid      Remote call uid
+   * @param {boolean} e.data.libRpc   `true` flag
+   * @param {string}  [e.data.error]  Error discription
+   * @param {string}  [e.data.method] Remote procedure name
+   * @param {string}  [e.data.event]  Server event name
+   * @param {*}       [e.data.data]   Procedure result or event data
    * @protected
    */
   handler (e) {
-    var { uid, error, method, eventName, data } = e.data
+    var { uid, error, method, eventName, data, libRpc } = e.data
+
+    if (!libRpc) return // ignore non-librpc messages
+
     if (error) {
       this.reject(uid, error)
     } else if (method) {
@@ -62,17 +66,20 @@ class RpcClient extends EventEmitter {
   /**
    * Error handler
    * https://www.nczonline.net/blog/2009/08/25/web-workers-errors-and-debugging/
-   * @param  {string} options.message  Error message
-   * @param  {number} options.lineno   Line number
-   * @param  {string} options.filename Filename
+   * @param  {string}  options.message  Error message
+   * @param  {number}  options.lineno   Line number
+   * @param  {string}  options.filename Filename
+   * @param  {boolean} options.libRpc   Error ignored if this is not true
    * @protected
    */
-  catch ({ message, lineno, filename }) {
-    this.emit('error', {
-      message,
-      lineno,
-      filename
-    })
+  catch ({ message, lineno, filename, libRpc}) {
+      if (libRpc) {
+        this.emit('error', {
+        message,
+        lineno,
+        filename
+        })
+    }
   }
 
   /**
@@ -132,7 +139,7 @@ class RpcClient extends EventEmitter {
       this.timeouts[uid] = setTimeout(() => this.reject(uid, `Timeout exceeded for RPC method "${method}"`), timeout)
       this.calls[uid] = resolve
       this.errors[uid] = reject
-      this.workers[this.idx].postMessage({ method, uid, data }, transferables)
+      this.workers[this.idx].postMessage({ method, uid, data, libRpc: true }, transferables)
       this.idx = ++this.idx % this.workers.length // round robin
     })
   }
