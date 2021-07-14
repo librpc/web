@@ -86,3 +86,13 @@ test('RpcClient.call()', t => {
     t.equal(buffer, res.buffer, 'should support transferables i/o')
   })
 })
+
+test('client and server ignore non-rpc messages', t => {
+  t.plan(2)
+
+  global.self.postMessage({ oh: 'what' })
+  t.ok(true, 'should not throw')
+
+  global.worker.postMessage({ foo: 'bar' })
+  t.ok(true, 'other message should not throw')
+})
