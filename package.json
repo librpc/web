@@ -1,7 +1,7 @@
 {
-  "name": "@librpc/web",
+  "name": "librpc-web-mod",
   "version": "1.1.0",
-  "description": "Promise-based RPC client and server for web workers",
+  "description": "Promise-based RPC client and server for web workers (forked from @librpc/web)",
   "keywords": [
     "rpc",
     "worker",
@@ -10,14 +10,10 @@
     "concurrency"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/librpc/web",
+  "homepage": "https://github.com/rbuels/librpc-web",
   "repository": {
     "type": "git",
-    "url": "https://github.com/librpc/web"
-  },
-  "bugs": {
-    "url": "https://github.com/librpc/web/issues",
-    "email": "broadsw.rd@yandex.ru"
+    "url": "https://github.com/rbuels/librpc-web"
   },
   "author": {
     "name": "Vladimir Bykov",
@@ -39,7 +35,6 @@
     "jest": "^27.0.6"
   },
   "scripts": {
-    "check": "standard src/*.js test/*.js | snazzy",
     "build": "babel src --out-dir dist",
     "test": "jest"
   },
