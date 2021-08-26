@@ -27,15 +27,14 @@
   "files": [
     "dist"
   ],
-  "umd": "dist/web-rpc.umd.js",
-  "main": "dist/web-rpc.cjs.js",
-  "module": "dist/web-rpc.js",
+  "main": "dist/index.js",
   "dependencies": {
     "@librpc/ee": "1.0.4",
     "serialize-error": "^8.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@babel/preset-env": "^7.15.0",
     "babel-jest": "^27.0.6",
     "jest": "^27.0.6"
   },
@@ -43,5 +42,10 @@
     "check": "standard src/*.js test/*.js | snazzy",
     "build": "babel src --out-dir dist",
     "test": "jest"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   }
 }

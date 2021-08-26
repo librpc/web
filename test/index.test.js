@@ -1,6 +1,6 @@
 var EventEmitter = require("events");
 
-var WebRPC = require("../dist/web-rpc.cjs.js");
+import WebRPC from "../src/";
 
 class EventTarget extends EventEmitter {
   addEventListener(event, listener) {
@@ -41,7 +41,7 @@ var client = new WebRPC.Client({
   workers: [global.worker],
 });
 
-xtest("RpcServer.constructor()", () => {
+test("RpcServer.constructor()", () => {
   expect(server instanceof WebRPC.Server).toBeTruthy();
   expect(Object.keys(server.methods)).toEqual([
     "add",
@@ -52,14 +52,14 @@ xtest("RpcServer.constructor()", () => {
   expect(global.self.eventNames()).toEqual(["message"]);
 });
 
-xtest("RpcServer.emit()", () => {
-  // function listener(data) {
-  //   expect(data).toEqual({ foo: "bar" });
-  // }
-  // client.on("event", listener);
-  // server.emit("event", { foo: "bar" });
-  // client.off("event", listener);
-  // server.emit("event", { foo: "bar" });
+test("RpcServer.emit()", () => {
+  function listener(data) {
+    expect(data).toEqual({ foo: "bar" });
+  }
+  client.on("event", listener);
+  server.emit("event", { foo: "bar" });
+  client.off("event", listener);
+  server.emit("event", { foo: "bar" });
 });
 
 test("RpcClient.constructor() should create new RPC client", () => {
@@ -81,13 +81,9 @@ test("RpcClient.call()", async () => {
   await expect(() =>
     client.call("task", null, { timeout: 100 })
   ).rejects.toThrow();
-  await expect(() => client.call("error")).rejects.toThrow();
-
-  try {
-    await client.call("error");
-  } catch (e) {
-    console.log(e.message);
-  }
+  await expect(() => client.call("error")).rejects.toThrowError(
+    "err is not defined"
+  );
 
   const buffer = new ArrayBuffer(0xff);
 
