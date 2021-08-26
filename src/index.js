@@ -3,5 +3,5 @@ import RpcServer from './server.js'
 
 export default {
   Client: RpcClient,
-  Server: RpcServer
+  Server: RpcServer,
 }

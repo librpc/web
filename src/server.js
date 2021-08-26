@@ -1,6 +1,6 @@
 /* eslint-env serviceworker */
-import { peekTransferables } from "./utils.js";
-import { serializeError } from "serialize-error";
+import { peekTransferables } from './utils.js'
+import { serializeError } from 'serialize-error'
 
 /**
  * @callback Procedure
@@ -26,8 +26,8 @@ class RpcServer {
    * })
    */
   constructor(methods) {
-    this.methods = methods;
-    this.listen();
+    this.methods = methods
+    this.listen()
   }
 
   /**
@@ -35,7 +35,7 @@ class RpcServer {
    * @protected
    */
   listen() {
-    self.addEventListener("message", this.handler.bind(this));
+    self.addEventListener('message', this.handler.bind(this))
   }
 
   /**
@@ -49,19 +49,19 @@ class RpcServer {
    * @protected
    */
   handler(e) {
-    var { libRpc, method, uid, data } = e.data;
+    var { libRpc, method, uid, data } = e.data
 
-    if (!libRpc) return; // ignore non-librpc messages
+    if (!libRpc) return // ignore non-librpc messages
 
     if (this.methods[method]) {
       Promise.resolve(data)
         .then(this.methods[method])
         .then(
-          (data) => this.reply(uid, method, data),
-          (error) => this.throw(uid, serializeError(error))
-        );
+          data => this.reply(uid, method, data),
+          error => this.throw(uid, serializeError(error)),
+        )
     } else {
-      this.throw(uid, `Unknown RPC method "${method}"`);
+      this.throw(uid, `Unknown RPC method "${method}"`)
     }
   }
 
@@ -73,8 +73,8 @@ class RpcServer {
    * @protected
    */
   reply(uid, method, data) {
-    var transferables = peekTransferables(data);
-    self.postMessage({ uid, method, data, libRpc: true }, transferables);
+    var transferables = peekTransferables(data)
+    self.postMessage({ uid, method, data, libRpc: true }, transferables)
   }
 
   /**
@@ -84,7 +84,7 @@ class RpcServer {
    * @protected
    */
   throw(uid, error) {
-    self.postMessage({ uid, error, libRpc: true });
+    self.postMessage({ uid, error, libRpc: true })
   }
 
   /**
@@ -99,10 +99,10 @@ class RpcServer {
    * }, 50)
    */
   emit(eventName, data) {
-    var transferables = peekTransferables(data);
+    var transferables = peekTransferables(data)
 
-    self.postMessage({ eventName, data, libRpc: true }, transferables);
+    self.postMessage({ eventName, data, libRpc: true }, transferables)
   }
 }
 
-export default RpcServer;
+export default RpcServer

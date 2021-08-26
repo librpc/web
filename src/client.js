@@ -1,6 +1,6 @@
-import EventEmitter from "@librpc/ee";
-import { peekTransferables, uuid } from "./utils.js";
-import { deserializeError } from "serialize-error";
+import EventEmitter from '@librpc/ee'
+import { peekTransferables, uuid } from './utils.js'
+import { deserializeError } from 'serialize-error'
 
 class RpcClient extends EventEmitter {
   /**
@@ -9,15 +9,15 @@ class RpcClient extends EventEmitter {
    * @param {WebWorker[]} options.workers List of server workers
    */
   constructor({ workers }) {
-    super();
-    this.workers = [...workers];
-    this.idx = 0;
-    this.calls = {};
-    this.timeouts = {};
-    this.errors = {};
-    this.handler = this.handler.bind(this);
-    this.catch = this.catch.bind(this);
-    this.init();
+    super()
+    this.workers = [...workers]
+    this.idx = 0
+    this.calls = {}
+    this.timeouts = {}
+    this.errors = {}
+    this.handler = this.handler.bind(this)
+    this.catch = this.catch.bind(this)
+    this.init()
   }
 
   /**
@@ -25,7 +25,7 @@ class RpcClient extends EventEmitter {
    * @protected
    */
   init() {
-    this.workers.forEach(this.listen, this);
+    this.workers.forEach(this.listen, this)
   }
 
   /**
@@ -34,8 +34,8 @@ class RpcClient extends EventEmitter {
    * @proteced
    */
   listen(worker) {
-    worker.addEventListener("message", this.handler);
-    worker.addEventListener("error", this.catch);
+    worker.addEventListener('message', this.handler)
+    worker.addEventListener('error', this.catch)
   }
 
   /**
@@ -51,16 +51,16 @@ class RpcClient extends EventEmitter {
    * @protected
    */
   handler(e) {
-    var { uid, error, method, eventName, data, libRpc } = e.data;
+    var { uid, error, method, eventName, data, libRpc } = e.data
 
-    if (!libRpc) return; // ignore non-librpc messages
+    if (!libRpc) return // ignore non-librpc messages
 
     if (error) {
-      this.reject(uid, error);
+      this.reject(uid, error)
     } else if (method) {
-      this.resolve(uid, data);
+      this.resolve(uid, data)
     } else if (eventName) {
-      this.emit(eventName, data);
+      this.emit(eventName, data)
     }
   }
 
@@ -75,11 +75,11 @@ class RpcClient extends EventEmitter {
    */
   catch({ message, lineno, filename, libRpc }) {
     if (libRpc) {
-      this.emit("error", {
+      this.emit('error', {
         message,
         lineno,
         filename,
-      });
+      })
     }
   }
 
@@ -91,8 +91,8 @@ class RpcClient extends EventEmitter {
    */
   reject(uid, error) {
     if (this.errors[uid]) {
-      this.errors[uid](deserializeError(error));
-      this.clear(uid);
+      this.errors[uid](deserializeError(error))
+      this.clear(uid)
     }
   }
 
@@ -104,8 +104,8 @@ class RpcClient extends EventEmitter {
    */
   resolve(uid, data) {
     if (this.calls[uid]) {
-      this.calls[uid](data);
-      this.clear(uid);
+      this.calls[uid](data)
+      this.clear(uid)
     }
   }
 
@@ -115,10 +115,10 @@ class RpcClient extends EventEmitter {
    * @protected
    */
   clear(uid) {
-    clearTimeout(this.timeouts[uid]);
-    delete this.timeouts[uid];
-    delete this.calls[uid];
-    delete this.errors[uid];
+    clearTimeout(this.timeouts[uid])
+    delete this.timeouts[uid]
+    delete this.calls[uid]
+    delete this.errors[uid]
   }
 
   /**
@@ -134,22 +134,22 @@ class RpcClient extends EventEmitter {
    * @return {Promise<*>}                        Remote procedure promise
    */
   call(method, data, { timeout = 2000 } = {}) {
-    var uid = uuid();
-    var transferables = peekTransferables(data);
+    var uid = uuid()
+    var transferables = peekTransferables(data)
     return new Promise((resolve, reject) => {
       this.timeouts[uid] = setTimeout(
         () => this.reject(uid, `Timeout exceeded for RPC method "${method}"`),
-        timeout
-      );
-      this.calls[uid] = resolve;
-      this.errors[uid] = reject;
+        timeout,
+      )
+      this.calls[uid] = resolve
+      this.errors[uid] = reject
       this.workers[this.idx].postMessage(
         { method, uid, data, libRpc: true },
-        transferables
-      );
-      this.idx = ++this.idx % this.workers.length; // round robin
-    });
+        transferables,
+      )
+      this.idx = ++this.idx % this.workers.length // round robin
+    })
   }
 }
 
-export default RpcClient;
+export default RpcClient
