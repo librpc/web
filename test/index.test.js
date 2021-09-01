@@ -65,12 +65,12 @@ test('RpcServer.emit()', () => {
 test('RpcClient.constructor() should create new RPC client', () => {
   expect(client instanceof WebRPC.Client).toBeTruthy()
   expect(client.workers.length).toEqual(1)
-  // expect(global.worker.eventNames()).toEqual(["message", "error"]);
-  // global.worker.emit("error", {
-  //   message: "Some error",
-  //   lineno: 42,
-  //   filename: "worker.js",
-  // });
+  expect(global.worker.eventNames()).toEqual(['message', 'error'])
+  global.worker.emit('error', {
+    message: 'Some error',
+    lineno: 42,
+    filename: 'worker.js',
+  })
 })
 
 test('RpcClient.call()', async () => {
