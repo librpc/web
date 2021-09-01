@@ -1,6 +1,6 @@
 {
   "name": "librpc-web-mod",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Promise-based RPC client and server for web workers (forked from @librpc/web)",
   "keywords": [
     "rpc",
