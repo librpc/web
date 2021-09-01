@@ -1,5 +1,6 @@
 /* eslint-env serviceworker */
 import { peekTransferables } from './utils.js'
+import { serializeError } from 'serialize-error'
 
 /**
  * @callback Procedure
@@ -24,7 +25,7 @@ class RpcServer {
    *   pow ({ x, y }) { return x ** y }
    * })
    */
-  constructor (methods) {
+  constructor(methods) {
     this.methods = methods
     this.listen()
   }
@@ -33,7 +34,7 @@ class RpcServer {
    * Subscribtion to "message" events
    * @protected
    */
-  listen () {
+  listen() {
     self.addEventListener('message', this.handler.bind(this))
   }
 
@@ -47,16 +48,18 @@ class RpcServer {
    * @param {*}       e.data.data   Procedure params
    * @protected
    */
-  handler (e) {
+  handler(e) {
     var { libRpc, method, uid, data } = e.data
 
     if (!libRpc) return // ignore non-librpc messages
 
     if (this.methods[method]) {
-      Promise.resolve(data).then(this.methods[method]).then(
-        data => this.reply(uid, method, data),
-        error => this.throw(uid, String(error))
-      )
+      Promise.resolve(data)
+        .then(this.methods[method])
+        .then(
+          data => this.reply(uid, method, data),
+          error => this.throw(uid, serializeError(error)),
+        )
     } else {
       this.throw(uid, `Unknown RPC method "${method}"`)
     }
@@ -69,7 +72,7 @@ class RpcServer {
    * @param {*}      data   Call result, could be any data
    * @protected
    */
-  reply (uid, method, data) {
+  reply(uid, method, data) {
     var transferables = peekTransferables(data)
     self.postMessage({ uid, method, data, libRpc: true }, transferables)
   }
@@ -80,7 +83,7 @@ class RpcServer {
    * @param {string} error Error description
    * @protected
    */
-  throw (uid, error) {
+  throw(uid, error) {
     self.postMessage({ uid, error, libRpc: true })
   }
 
@@ -95,7 +98,7 @@ class RpcServer {
    *   server.emit('update', Date.now())
    * }, 50)
    */
-  emit (eventName, data) {
+  emit(eventName, data) {
     var transferables = peekTransferables(data)
 
     self.postMessage({ eventName, data, libRpc: true }, transferables)

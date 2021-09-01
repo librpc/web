@@ -1,7 +1,7 @@
 {
-  "name": "@librpc/web",
+  "name": "librpc-web-mod",
   "version": "1.1.0",
-  "description": "Promise-based RPC client and server for web workers",
+  "description": "Promise-based RPC client and server for web workers (forked from @librpc/web)",
   "keywords": [
     "rpc",
     "worker",
@@ -10,14 +10,10 @@
     "concurrency"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/librpc/web",
+  "homepage": "https://github.com/rbuels/librpc-web",
   "repository": {
     "type": "git",
-    "url": "https://github.com/librpc/web"
-  },
-  "bugs": {
-    "url": "https://github.com/librpc/web/issues",
-    "email": "broadsw.rd@yandex.ru"
+    "url": "https://github.com/rbuels/librpc-web"
   },
   "author": {
     "name": "Vladimir Bykov",
@@ -27,32 +23,24 @@
   "files": [
     "dist"
   ],
-  "umd": "dist/web-rpc.umd.js",
-  "main": "dist/web-rpc.cjs.js",
-  "module": "dist/web-rpc.js",
+  "main": "dist/index.js",
   "dependencies": {
-    "@librpc/ee": "1.0.4"
+    "@librpc/ee": "1.0.4",
+    "serialize-error": "^8.1.0"
   },
   "devDependencies": {
-    "coveralls": "3.0.0",
-    "jsdoc-to-markdown": "4.0.1",
-    "nyc": "11.4.1",
-    "rollup": "0.57.1",
-    "rollup-plugin-buble": "0.19.2",
-    "rollup-plugin-commonjs": "9.1.0",
-    "rollup-plugin-node-resolve": "3.3.0",
-    "snazzy": "7.1.1",
-    "standard": "11.0.1",
-    "tap-diff": "0.1.1",
-    "tape": "4.9.0",
-    "uglify-js": "3.3.21"
+    "@babel/cli": "^7.14.8",
+    "@babel/preset-env": "^7.15.0",
+    "babel-jest": "^27.0.6",
+    "jest": "^27.0.6"
   },
   "scripts": {
-    "check": "standard src/*.js test/*.js | snazzy",
-    "build": "rollup -c",
-    "test": "nyc --reporter=html --reporter=lcov --reporter=text tape test/index.test.js",
-    "min": "uglifyjs dist/web-rpc.umd.js -c -m > dist/web-rpc.min.js",
-    "docs": "jsdoc2md src/*",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "build": "babel src --out-dir dist",
+    "test": "jest"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   }
 }
