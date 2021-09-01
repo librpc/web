@@ -10,10 +10,10 @@
     "concurrency"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/rbuels/librpc-web",
+  "homepage": "https://github.com/cmdcolin/librpc-web",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rbuels/librpc-web"
+    "url": "https://github.com/cmdcolin/librpc-web"
   },
   "author": {
     "name": "Vladimir Bykov",
