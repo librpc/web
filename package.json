@@ -35,6 +35,8 @@
     "jest": "^27.0.6"
   },
   "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
     "build": "babel src --out-dir dist",
     "test": "jest"
   },
