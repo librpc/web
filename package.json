@@ -30,9 +30,11 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.14.8",
+    "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.15.0",
     "babel-jest": "^27.0.6",
-    "jest": "^27.0.6"
+    "jest": "^27.0.6",
+    "rimraf": "^3.0.2"
   },
   "scripts": {
     "clean": "rimraf dist",
